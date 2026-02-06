@@ -7,9 +7,23 @@ import { Navbar } from '@/components/layout/navbar';
 import Logo from '@/components/layout/Logo';
 import { Card } from '@/components/ui/card';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/hooks';
 import { Brain, ClipboardList, Atom, Zap, Flame, RefreshCw, Check, Calendar, Target, Sparkles, Dumbbell } from 'lucide-react';
 
 export default function HomePage() {
+  const router = useRouter();
+  const { user, loading } = useAuth();
+  
+  // Handle CTA button click - redirect based on auth status
+  const handleGetStartedClick = () => {
+    if (user) {
+      router.push('/scheduler');
+    } else {
+      router.push('/signup');
+    }
+  };
+
     // About Us stats animation
     const [aboutStatsAnimated, setAboutStatsAnimated] = useState(false);
     const [aboutStats, setAboutStats] = useState({
@@ -203,13 +217,14 @@ export default function HomePage() {
             Tell us your schedule and fitness goals. FlexFit's intelligent algorithm instantly generates a personalized, science-backed workout plan tailored to your needs.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/signup"
+            <button
+              onClick={handleGetStartedClick}
+              disabled={loading}
               className="inline-block px-8 py-4 rounded-lg transition hover:opacity-90 font-semibold text-lg shadow-lg btn-accent"
               style={{ backgroundColor: '#9B8B6F', color: '#333' }}
             >
               Get Started Free →
-            </Link>
+            </button>
             <button
               type="button"
               className="inline-block px-8 py-4 rounded-lg transition hover:opacity-80 font-semibold text-lg btn-accent"
@@ -664,7 +679,7 @@ export default function HomePage() {
                   number: 1, 
                   title: 'Tell Us Your Schedule & Goals', 
                   description: 'Share your availability and fitness objectives in seconds',
-                  details: ['Select 1-7 training days per week', 'Choose your fitness goal (muscle, strength, or fat loss)', 'Pick your experience level (beginner to advanced)', 'Set your session duration (30-90 minutes)'],
+                  details: ['Select 1-7 training days per week', 'Choose your fitness goal', 'Pick your experience level (beginner to advanced)', 'Set your session duration (30-90 minutes)'],
                   icon: Calendar
                 },
                 { 
@@ -725,7 +740,7 @@ export default function HomePage() {
                           number: 1, 
                           title: 'Tell Us Your Schedule & Goals', 
                           description: 'Share your availability and fitness objectives in seconds',
-                          details: ['Select 1-7 training days per week', 'Choose your fitness goal (muscle, strength, or fat loss)', 'Pick your experience level (beginner to advanced)', 'Set your session duration (30-90 minutes)'],
+                          details: ['Select 1-7 training days per week', 'Choose your fitness goal', 'Pick your experience level (beginner to advanced)', 'Set your session duration (30-90 minutes)'],
                           icon: Calendar
                         },
                         { 
@@ -762,7 +777,7 @@ export default function HomePage() {
                             number: 1, 
                             title: 'Tell Us Your Schedule & Goals', 
                             description: 'Share your availability and fitness objectives in seconds',
-                            details: ['Select 1-7 training days per week', 'Choose your fitness goal (muscle, strength, or fat loss)', 'Pick your experience level (beginner to advanced)', 'Set your session duration (30-90 minutes)'],
+                            details: ['Select 1-7 training days per week', 'Choose your fitness goal', 'Pick your experience level (beginner to advanced)', 'Set your session duration (30-90 minutes)'],
                             icon: Calendar
                           },
                           { 
@@ -794,7 +809,7 @@ export default function HomePage() {
                             number: 1, 
                             title: 'Tell Us Your Schedule & Goals', 
                             description: 'Share your availability and fitness objectives in seconds',
-                            details: ['Select 1-7 training days per week', 'Choose your fitness goal (muscle, strength, or fat loss)', 'Pick your experience level (beginner to advanced)', 'Set your session duration (30-90 minutes)'],
+                            details: ['Select 1-7 training days per week', 'Choose your fitness goal', 'Pick your experience level (beginner to advanced)', 'Set your session duration (30-90 minutes)'],
                             icon: Calendar
                           },
                           { 
@@ -827,7 +842,7 @@ export default function HomePage() {
                           number: 1, 
                           title: 'Tell Us Your Schedule & Goals', 
                           description: 'Share your availability and fitness objectives in seconds',
-                          details: ['Select 1-7 training days per week', 'Choose your fitness goal (muscle, strength, or fat loss)', 'Pick your experience level (beginner to advanced)', 'Set your session duration (30-90 minutes)'],
+                          details: ['Select 1-7 training days per week', 'Choose your fitness goal', 'Pick your experience level (beginner to advanced)', 'Set your session duration (30-90 minutes)'],
                           icon: Calendar
                         },
                         { 
@@ -863,7 +878,7 @@ export default function HomePage() {
                       number: 1, 
                       title: 'Tell Us Your Schedule & Goals', 
                       description: 'Share your availability and fitness objectives in seconds',
-                      details: ['Select 1-7 training days per week', 'Choose your fitness goal (muscle, strength, or fat loss)', 'Pick your experience level (beginner to advanced)', 'Set your session duration (30-90 minutes)'],
+                      details: ['Select 1-7 training days per week', 'Choose your fitness goal', 'Pick your experience level (beginner to advanced)', 'Set your session duration (30-90 minutes)'],
                       icon: Calendar
                     },
                     { 
@@ -925,14 +940,15 @@ export default function HomePage() {
 
             {/* Call to Action */}
             <div className="text-center mt-16">
-              <Link
-                href="/signup"
+              <button
+                onClick={handleGetStartedClick}
+                disabled={loading}
                 className="inline-flex items-center gap-1 px-3 py-3 rounded-lg font-semibold text-sm transition-all duration-300 hover:scale-105 hover:shadow-2xl group"
                 style={{ backgroundColor: '#9B8B6F', color: '#333' }}
               >
                 <span>Get Started Free</span>
                 <span className="text-lg group-hover:translate-x-1 transition-transform">→</span>
-              </Link>
+              </button>
             </div>
           </div>
         </div>

@@ -106,7 +106,6 @@ export default function WorkoutsPage() {
             } else if (sessionPlan) {
               console.warn('Session plan does not belong to current user - ignoring sessionPlanId');
             }
-            // If session plan not found or doesn't belong to user, fall back to loading all plans
           } catch (e) {
             console.warn('Failed to load session plan:', e);
             // fallthrough to loading all plans
@@ -138,7 +137,7 @@ export default function WorkoutsPage() {
       const day = dedupedPlan[dayName];
       const seenIds = new Set<string>();
       const originalLength = day.exercises.length;
-      
+
       day.exercises = day.exercises.filter((exercise) => {
         if (seenIds.has(exercise.id)) {
           console.warn(`Removing duplicate exercise ${exercise.id} from ${dayName}`);
@@ -171,7 +170,9 @@ export default function WorkoutsPage() {
     } else {
       setExerciseStatus({});
     }
-  }, [workout?.exerciseStatus]);  useEffect(() => {
+  }, [workout?.exerciseStatus]);
+
+  useEffect(() => {
     setStreakCount(workout?.streakCount ?? 0);
     setConsecutiveSkips(workout?.consecutiveSkips ?? 0);
   }, [workout?.id, workout?.streakCount, workout?.consecutiveSkips]);
@@ -202,7 +203,7 @@ export default function WorkoutsPage() {
       } as { exerciseId: string; completed: boolean; completedDate: Date; timesCompleted: number },
     };
     setExerciseStatus(newStatus);
-    
+
     // Save to Firestore
     try {
       await updateWorkoutPlan(workout.id, {
@@ -222,7 +223,7 @@ export default function WorkoutsPage() {
     const newStatus = { ...exerciseStatus };
     delete newStatus[statusKey];
     setExerciseStatus(newStatus);
-    
+
     // Save to Firestore
     try {
       await updateWorkoutPlan(workout.id, {
@@ -235,12 +236,12 @@ export default function WorkoutsPage() {
 
   const checkDayExercisesCompleted = (status: Record<string, any>, dayName: string) => {
     if (!workout) return;
-    
+
     const workoutPlan = workout.plan;
     const dayPlan = workoutPlan[dayName];
-    
+
     if (!dayPlan) return;
-    
+
     // Check if all exercises for this specific day are completed
     const dayExercises = dayPlan.exercises;
     const allDayCompleted = dayExercises.every(exercise => status[`${dayName}-${exercise.id}`]?.completed);
@@ -249,7 +250,7 @@ export default function WorkoutsPage() {
 
     if (allDayCompleted && dayExercises.length > 0) {
       console.log('✅ All exercises completed for', dayName, '- TRIGGERING ANIMATION');
-      
+
       const streakSection = document.getElementById('streak-tracker-section');
       if (streakSection) {
         streakSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -285,7 +286,7 @@ export default function WorkoutsPage() {
       setTimeout(() => {
         console.log('🛑 Calling setTriggerStreakAnimation(false)');
         setTriggerStreakAnimation(false);
-        
+
         // Check if all days of the week are completed
         checkWeekCompletion(status);
       }, 3500); // Wait for animation to finish (3s for glow + 0.5s buffer)
@@ -310,10 +311,10 @@ export default function WorkoutsPage() {
 
   const checkWeekCompletion = (status: Record<string, any>) => {
     if (!workout) return;
-    
+
     const workoutPlan = workout.plan;
     const allDays = Object.keys(workoutPlan);
-    
+
     // Check if all exercises for all days are completed
     const allWeekCompleted = allDays.every(dayName => {
       const dayPlan = workoutPlan[dayName];
@@ -333,7 +334,7 @@ export default function WorkoutsPage() {
     if (!workout?.id) return;
     if (confirm('Are you sure you want to reset all progress? This will unmark all completed exercises.')) {
       setExerciseStatus({});
-      
+
       // Save to Firestore
       try {
         await updateWorkoutPlan(workout.id, {
@@ -347,13 +348,13 @@ export default function WorkoutsPage() {
 
   const handleKeepGoing = async () => {
     if (!workout?.id) return;
-    
+
     // Close celebration modal
     setShowWeekCompleteCelebration(false);
-    
+
     // Reset all exercise status
     setExerciseStatus({});
-    
+
     // Save to Firestore
     try {
       await updateWorkoutPlan(workout.id, {
@@ -385,7 +386,7 @@ export default function WorkoutsPage() {
 
   const handleChangeExercise = async (dayName: string, oldExerciseId: string, newExercise: Exercise) => {
     if (!workout?.id) return;
-    
+
     // Update local state
     const updatedPlan = { ...workout.plan };
     if (updatedPlan[dayName]) {
@@ -393,10 +394,10 @@ export default function WorkoutsPage() {
         ex.id === oldExerciseId ? newExercise : ex
       );
     }
-    
+
     setWorkout({ ...workout, plan: updatedPlan });
     setPlans([{ ...workout, plan: updatedPlan }]);
-    
+
     // Save to Firestore
     try {
       await updateWorkoutPlan(workout.id, {
@@ -413,13 +414,13 @@ export default function WorkoutsPage() {
     const updatedPlan = { ...workout.plan };
     if (updatedPlan[dayName]) {
       const exercises = [...updatedPlan[dayName].exercises];
-      
+
       // Check if exercise already exists in this day
       if (exercises.some((ex) => ex.id === newExercise.id)) {
         console.warn(`Exercise ${newExercise.id} already exists in ${dayName}`);
         return;
       }
-      
+
       const insertIndex = exercises.findIndex((ex) => ex.id === afterExerciseId);
       const nextIndex = insertIndex >= 0 ? insertIndex + 1 : exercises.length;
       exercises.splice(nextIndex, 0, newExercise);
@@ -478,35 +479,35 @@ export default function WorkoutsPage() {
           </div>
         </div>
       ) : plans.length === 0 ? (
-        <div className="relative overflow-hidden group" style={{ 
-          background: 'linear-gradient(135deg, rgba(20,20,24,0.96) 0%, rgba(26,26,26,0.95) 25%, rgba(18,18,20,0.98) 50%, rgba(12,12,12,1) 100%)', 
-          backdropFilter: 'blur(16px)', 
-          WebkitBackdropFilter: 'blur(16px)', 
-          border: '1.5px solid rgba(40, 36, 32, 0.4)', 
-          borderRadius: '20px', 
-          padding: '2.5rem 2rem', 
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.55), 0 8px 24px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.02)' 
+        <div className="relative overflow-hidden group" style={{
+          background: 'linear-gradient(135deg, rgba(20,20,24,0.96) 0%, rgba(26,26,26,0.95) 25%, rgba(18,18,20,0.98) 50%, rgba(12,12,12,1) 100%)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          border: '1.5px solid rgba(40, 36, 32, 0.4)',
+          borderRadius: '20px',
+          padding: '2.5rem 2rem',
+          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.55), 0 8px 24px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.02)'
         }}>
           {/* Animated gradient meshes */}
-          <div className="absolute inset-0 opacity-20" style={{ 
-            background: 'radial-gradient(ellipse at top left, rgba(0,0,0,0.6) 0%, transparent 50%), radial-gradient(ellipse at bottom right, rgba(0,0,0,0.5) 0%, transparent 50%), radial-gradient(circle at center, rgba(0,0,0,0.45) 0%, transparent 70%)' 
+          <div className="absolute inset-0 opacity-20" style={{
+            background: 'radial-gradient(ellipse at top left, rgba(0,0,0,0.6) 0%, transparent 50%), radial-gradient(ellipse at bottom right, rgba(0,0,0,0.5) 0%, transparent 50%), radial-gradient(circle at center, rgba(0,0,0,0.45) 0%, transparent 70%)'
           }}></div>
-          
+
           <div className="relative z-10 flex flex-col items-center justify-center text-center max-w-lg mx-auto">
             {/* Floating decorative orbs with animation */}
-            <div 
+            <div
               className="absolute -right-16 -top-16 w-48 h-48 opacity-12 blur-3xl animate-pulse transition-all duration-700 group-hover:opacity-20 group-hover:scale-110"
-                style={{ background: 'radial-gradient(circle, rgba(230,200,120,0.12) 0%, rgba(184,147,94,0.08) 50%, transparent 75%)', animationDuration: '4s' }}
+              style={{ background: 'radial-gradient(circle, rgba(230,200,120,0.12) 0%, rgba(184,147,94,0.08) 50%, transparent 75%)', animationDuration: '4s' }}
             ></div>
-            <div 
+            <div
               className="absolute -left-16 -bottom-16 w-56 h-56 opacity-8 blur-3xl animate-pulse transition-all duration-700 group-hover:opacity-12 group-hover:scale-110"
-                style={{ background: 'radial-gradient(circle, rgba(138,111,61,0.08) 0%, rgba(90,74,50,0.06) 50%, transparent 75%)', animationDuration: '5s', animationDelay: '1s' }}
+              style={{ background: 'radial-gradient(circle, rgba(138,111,61,0.08) 0%, rgba(90,74,50,0.06) 50%, transparent 75%)', animationDuration: '5s', animationDelay: '1s' }}
             ></div>
 
             {/* Icon container with glow effect */}
-            <div 
-              className="mb-5 p-4 rounded-xl relative transform transition-all duration-300 hover:scale-105" 
-              style={{ 
+            <div
+              className="mb-5 p-4 rounded-xl relative transform transition-all duration-300 hover:scale-105"
+              style={{
                 background: 'linear-gradient(135deg, rgba(230, 200, 120, 0.18) 0%, rgba(184, 147, 94, 0.12) 100%)',
                 border: '1.5px solid rgba(230, 200, 120, 0.35)',
                 boxShadow: '0 10px 40px rgba(230, 200, 120, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 0 30px rgba(230, 200, 120, 0.1)',
@@ -516,10 +517,10 @@ export default function WorkoutsPage() {
             >
               <ClipboardList className="w-12 h-12 mx-auto" style={{ color: '#E6C878', filter: 'drop-shadow(0 2px 8px rgba(230, 200, 120, 0.4))' }} />
             </div>
-            
-            <h3 
-              className="text-2xl font-black mb-2 uppercase tracking-wide" 
-              style={{ 
+
+            <h3
+              className="text-2xl font-black mb-2 uppercase tracking-wide"
+              style={{
                 color: '#FFFFFF',
                 letterSpacing: '0.03em',
                 textShadow: '0 4px 16px rgba(0, 0, 0, 0.6), 0 0 30px rgba(230, 200, 120, 0.3)',
@@ -532,8 +533,8 @@ export default function WorkoutsPage() {
               No Plans Yet
             </h3>
 
-            <p 
-              className="text-sm leading-relaxed mb-5 px-4" 
+            <p
+              className="text-sm leading-relaxed mb-5 px-4"
               style={{ color: 'rgba(230, 200, 120, 0.85)', textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)' }}
             >
               Create your first personalized workout plan in under 2 minutes.
@@ -543,7 +544,7 @@ export default function WorkoutsPage() {
             <Link
               href="/signup"
               className="inline-flex items-center gap-2 px-5 py-2.5 font-bold text-xs uppercase tracking-widest transition-all duration-300 group/btn transform"
-              style={{ 
+              style={{
                 background: 'linear-gradient(135deg, #E6C878 0%, #F0D699 100%)',
                 color: '#1a1510',
                 boxShadow: '0 10px 30px rgba(230, 200, 120, 0.4), 0 4px 12px rgba(0, 0, 0, 0.25)',
@@ -575,7 +576,7 @@ export default function WorkoutsPage() {
               <div className="text-center p-8 rounded-2xl relative overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(26, 26, 26, 0.85) 0%, rgba(20, 20, 30, 0.9) 100%)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(196, 169, 98, 0.2)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)' }}>
                 {/* Background gradient orb */}
                 <div className="absolute top-0 right-0 w-64 h-64 opacity-10 blur-3xl" style={{ background: 'radial-gradient(circle, #E6C878 0%, transparent 70%)' }}></div>
-                
+
                 <div className="relative z-10">
                   <h2 className="text-4xl font-black mb-3 uppercase tracking-wide" style={{ background: 'linear-gradient(135deg, #E6C878 0%, #B8935E 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{(workout || latest)?.name}</h2>
                   <div className="flex items-center justify-center gap-4 text-sm mb-6" style={{ color: '#A0A0A0' }}>
@@ -597,7 +598,7 @@ export default function WorkoutsPage() {
               {/* Workout Days Section */}
               <div className="space-y-6" id="workout-days-section">
                 {sortDaysByWeek(Object.entries((workout || latest)!.plan)).map(([dayName, dayPlan]) => (
-                  <div 
+                  <div
                     key={dayName}
                     className="rounded-2xl p-6 relative overflow-hidden group transition-all duration-500"
                     style={{ background: 'linear-gradient(135deg, rgba(26, 26, 26, 0.85) 0%, rgba(20, 20, 30, 0.9) 100%)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(196, 169, 98, 0.2)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)' }}
@@ -606,7 +607,7 @@ export default function WorkoutsPage() {
                   >
                     {/* Subtle gradient overlay on hover */}
                     <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: 'radial-gradient(circle at top right, rgba(196, 169, 98, 0.05) 0%, transparent 60%)' }}></div>
-                    
+
                     <div className="relative z-10">
                       {/* Day Header */}
                       <div className="mb-6 pb-4 border-b flex justify-between items-start" style={{ borderColor: 'rgba(196, 169, 98, 0.2)' }}>
@@ -634,7 +635,7 @@ export default function WorkoutsPage() {
                           + Add Exercise
                         </button>
                       </div>
-                      
+
                       {/* Exercises */}
                       <div className="space-y-4">
                         {dayPlan.exercises.map((exercise: Exercise, index: number) => (
@@ -644,21 +645,28 @@ export default function WorkoutsPage() {
                             dayName={dayName}
                             isCompleted={exerciseStatus[`${dayName}-${exercise.id}`]?.completed || false}
                             workoutId={(workout || latest)!.id!}
-                            onMarkComplete={async () => handleMarkComplete(exercise.id, dayName)}
-                            onUnmark={async () => handleUnmarkExercise(exercise.id, dayName)}
+                            onMarkComplete={async () => {
+                              await handleMarkComplete(exercise.id, dayName);
+                            }}
+                            onUnmark={async () => {
+                              await handleUnmarkExercise(exercise.id, dayName);
+                            }}
                             onChangeExercise={async (newExercise) => handleChangeExercise(dayName, exercise.id, newExercise)}
                             onAddExercise={addingExerciseForDay === dayName && index === 0 ? async (newExercise) => {
                               await handleAddExercise(dayName, exercise.id, newExercise);
                               setAddingExerciseForDay(null);
                             } : undefined}
-                            onDeleteExercise={async () => handleDeleteExercise(dayName, exercise.id)}
+                            onDeleteExercise={async () => {
+                              await handleDeleteExercise(dayName, exercise.id);
+                            }}
                           />
                         ))}
                       </div>
                     </div>
                   </div>
                 ))}
-              </div>\n            </div>
+              </div>
+            </div>
           ) : (
             <DashboardCard variant="accent" className="py-12 text-center">
               <p className="text-[#E5E1DA]">No workout plans available.</p>
@@ -673,7 +681,7 @@ export default function WorkoutsPage() {
           <div className="rounded-3xl p-10 max-w-lg w-full relative overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(26, 26, 26, 0.95) 0%, rgba(20, 20, 30, 0.98) 100%)', backdropFilter: 'blur(30px)', WebkitBackdropFilter: 'blur(30px)', border: '2px solid rgba(196, 169, 98, 0.3)', boxShadow: '0 20px 60px rgba(196, 169, 98, 0.2), 0 8px 24px rgba(0, 0, 0, 0.3)' }}>
             {/* Animated background glow */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full opacity-20 blur-3xl" style={{ background: 'radial-gradient(circle at top, #E6C878 0%, transparent 70%)' }}></div>
-            
+
             <div className="text-center space-y-6 relative z-10">
               {/* Trophy Icon with sparkle effect */}
               <div className="flex justify-center mb-2">
@@ -693,7 +701,7 @@ export default function WorkoutsPage() {
                   <Sparkles className="absolute -bottom-2 -left-2 w-5 h-5 text-yellow-300 animate-pulse" style={{ animationDelay: '0.5s' }} />
                 </div>
               </div>
-              
+
               <h2 className="text-4xl font-black uppercase tracking-wide" style={{ background: 'linear-gradient(135deg, #E6C878 0%, #B8935E 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{celebrationMessage.title}</h2>
               <p className="text-lg leading-relaxed" style={{ color: '#C0C0C0' }}>{celebrationMessage.message}</p>
               <div className="pt-6">
