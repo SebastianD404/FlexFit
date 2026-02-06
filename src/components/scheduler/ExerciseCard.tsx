@@ -15,6 +15,7 @@ interface ExerciseCardProps {
   onUnmark?: () => Promise<void>;
   onChangeExercise?: (newExercise: Exercise) => Promise<void>;
   onAddExercise?: (newExercise: Exercise) => Promise<void>;
+  onAddExerciseClose?: () => void;
   onDeleteExercise?: () => Promise<void>;
   workoutId: string;
 }
@@ -33,6 +34,7 @@ export function ExerciseCard({
   onUnmark,
   onChangeExercise,
   onAddExercise,
+  onAddExerciseClose,
   onDeleteExercise,
   workoutId,
 }: ExerciseCardProps) {
@@ -279,7 +281,12 @@ export function ExerciseCard({
       )}
 
       {/* Premium Exercise Selector Modal */}
-      <AlertDialog.Root open={showAlternatives} onOpenChange={setShowAlternatives}>
+      <AlertDialog.Root open={showAlternatives} onOpenChange={(open) => {
+        setShowAlternatives(open);
+        if (!open && onAddExerciseClose) {
+          onAddExerciseClose();
+        }
+      }}>
         <AlertDialog.Portal>
           <AlertDialog.Overlay className="fixed inset-0 bg-black/90 backdrop-blur-md z-40" />
           <AlertDialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[92vw] max-w-4xl rounded-2xl shadow-2xl max-h-[80vh] flex flex-col z-50 overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(38, 38, 38, 0.96) 0%, rgba(28, 28, 40, 0.96) 100%)', backdropFilter: 'blur(26px)', WebkitBackdropFilter: 'blur(26px)', border: '2px solid rgba(230, 200, 120, 0.35)', boxShadow: '0 18px 50px rgba(230, 200, 120, 0.25)' }}>

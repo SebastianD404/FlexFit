@@ -656,6 +656,7 @@ export default function WorkoutsPage() {
                               await handleAddExercise(dayName, exercise.id, newExercise);
                               setAddingExerciseForDay(null);
                             } : undefined}
+                            onAddExerciseClose={() => setAddingExerciseForDay(null)}
                             onDeleteExercise={async () => {
                               await handleDeleteExercise(dayName, exercise.id);
                             }}
